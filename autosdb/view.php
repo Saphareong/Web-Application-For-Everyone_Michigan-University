@@ -1,5 +1,5 @@
 <?php
-
+/* WEEK 2
 // Demand a GET parameter
 if ( ! isset($_GET['name']) || strlen($_GET['name']) < 1  ) {
     die('Not logged in');
@@ -41,8 +41,50 @@ if(isset($_POST['make']) && isset($_POST['year']) && isset($_POST['mileage'])) /
         $success = "Record inserted";
     }
 }
+*/
+session_start();
+// Demand a SESSION ----------- THIS IS WEEK 4 COURSE 3
+if (!isset($_SESSION['email'])) {
+    die('Not logged in');
+}
+
+// If the user requested logout go back to index.php
+if ( isset($_POST['logout']) ) {
+    unset($_SESSION['email']);
+    header('Location: index.php');
+    return;
+}
+
+//NOT A PROFESSIONAL MOVE IT's JUST RECOMMENDED ACTION
+require_once "pdo.php";
 
 
+//validation field
+$fail = false; //carrying message
+$success = false; //this one does that too
+if(isset($_POST['make']) && isset($_POST['year']) && isset($_POST['mileage'])) //this is when the form post below is submitted
+{
+    if(strlen($_POST['make']) < 1)
+    {
+        $fail = "Make is required";
+    }
+    else if(!is_numeric($_POST['year']) || !is_numeric($_POST['mileage']))
+    {
+        $fail = "Mileage and year must be numeric";
+
+    }
+    else
+    {
+        $stmt = $pdo->prepare('INSERT INTO autos
+        (make, year, mileage) VALUES ( :mk, :yr, :mi)');
+        $stmt->execute(array(
+        ':mk' => $_POST['make'],
+        ':yr' => $_POST['year'],
+        ':mi' => $_POST['mileage'])
+        );
+        $success = "Record inserted";
+    }
+}
 
 ?>
 <!DOCTYPE html>
@@ -54,32 +96,17 @@ if(isset($_POST['make']) && isset($_POST['year']) && isset($_POST['mileage'])) /
 <body>
 <div class="container">
 <?php 
-    if(isset($_REQUEST['name']))
+    if(isset($_SESSION['email']))
     {
         echo "<h1>Tracking Autos for ";
-        echo htmlentities($_REQUEST['name']);
+        echo htmlentities($_SESSION['email']);
         echo "</h1>\n";
     }
-    if($fail !== false)
+    if(isset($_SESSION['success']))
     {
-        echo('<p style="color:red;">'.htmlentities($fail)."</p>\n");
-    }
-    else if($success !== false)
-    {
-        echo('<p style="color:green;">'.htmlentities($success)."</p>\n");
-    }
-?>
-<form method="post">
-<p>Make:
-<input type="text" name="make" size="60"/></p>
-<p>Year:
-<input type="text" name="year"/></p>
-<p>Mileage:
-<input type="text" name="mileage"/></p>
-<input type="submit" value="Add">
-<input type="submit" name="logout" value="Logout">
-</form>
-
+        echo('<p style="color:green;">'.htmlentities($_SESSION['success'])."</p>\n");
+        unset($_SESSION['success']);
+    }?>
 <h2>Automobiles</h2>
 <ul>
 <?php
@@ -92,6 +119,7 @@ if(isset($_POST['make']) && isset($_POST['year']) && isset($_POST['mileage'])) /
     }
 ?>
 </ul>
+<a href="logout.php">Logout | </a><a href="add.php">Add New</a>
 </div>
 </body>
 </html>
