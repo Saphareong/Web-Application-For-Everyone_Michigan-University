@@ -7,7 +7,7 @@ if (!isset($_SESSION['email'])) {
 }
 
 // If the user requested logout go back to index.php
-if ( isset($_GET['logout']) ) {
+if ( isset($_POST['logout']) ) {
     unset($_SESSION['email']);
     header('Location: index.php');
     return;
@@ -18,13 +18,13 @@ if ( isset($_GET['logout']) ) {
 require_once "pdo.php";
 
 
-if(isset($_GET['make']) && isset($_GET['year']) && isset($_GET['mileage'])) //this is when the form post below is submitted
+if(isset($_POST['make']) && isset($_POST['year']) && isset($_POST['mileage'])) //this is when the form post below is submitted
 {
-    if(strlen($_GET['make']) < 1)
+    if(strlen($_POST['make']) < 1)
     {
         $_SESSION['fail'] = "Make is required";
     }
-    else if(!is_numeric($_GET['year']) || !is_numeric($_GET['mileage']))
+    else if(!is_numeric($_POST['year']) || !is_numeric($_POST['mileage']))
     {
         $_SESSION['fail'] = "Mileage and year must be numeric";
     }
@@ -33,14 +33,16 @@ if(isset($_GET['make']) && isset($_GET['year']) && isset($_GET['mileage'])) //th
         $stmt = $pdo->prepare('INSERT INTO autos
         (make, year, mileage) VALUES ( :mk, :yr, :mi)');
         $stmt->execute(array(
-        ':mk' => $_GET['make'],
-        ':yr' => $_GET['year'],
-        ':mi' => $_GET['mileage'])
+        ':mk' => $_POST['make'],
+        ':yr' => $_POST['year'],
+        ':mi' => $_POST['mileage'])
         );
         $_SESSION['success'] = "Record inserted";
         header("Location: view.php");
         return;
     }
+    header("Location: add.php");
+    return;
 }
 
 
