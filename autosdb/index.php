@@ -7,12 +7,19 @@
 </head>
 <body>
 <div class="container">
-    <h1>Welcome to Broken Rock Paper Scissors</h1>
+    <h1>Welcome to the Automobiles Database</h1>
     <p><strong>Note:</strong> This sample code is only
     partially done and serves only as a starting point for the assignment.
     </p>
+    <?php
+        if(isset($_SESSION['success']))
+        {
+            echo "<p>", htmlentities($_SESSION['success']), "</p>";
+            unset($_SESSION['success']);
+        }
+    ?>
     <p>
-    <a href="login.php">Please Log In</a>
+    <a href="login.php">Please log in</a>
     </p>
     <p>
     Attempt to go to 

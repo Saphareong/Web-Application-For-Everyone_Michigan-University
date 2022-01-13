@@ -59,32 +59,6 @@ if ( isset($_POST['logout']) ) {
 require_once "pdo.php";
 
 
-//validation field
-$fail = false; //carrying message
-$success = false; //this one does that too
-if(isset($_POST['make']) && isset($_POST['year']) && isset($_POST['mileage'])) //this is when the form post below is submitted
-{
-    if(strlen($_POST['make']) < 1)
-    {
-        $fail = "Make is required";
-    }
-    else if(!is_numeric($_POST['year']) || !is_numeric($_POST['mileage']))
-    {
-        $fail = "Mileage and year must be numeric";
-
-    }
-    else
-    {
-        $stmt = $pdo->prepare('INSERT INTO autos
-        (make, year, mileage) VALUES ( :mk, :yr, :mi)');
-        $stmt->execute(array(
-        ':mk' => $_POST['make'],
-        ':yr' => $_POST['year'],
-        ':mi' => $_POST['mileage'])
-        );
-        $success = "Record inserted";
-    }
-}
 
 ?>
 <!DOCTYPE html>
@@ -93,6 +67,15 @@ if(isset($_POST['make']) && isset($_POST['year']) && isset($_POST['mileage'])) /
 <title>Saphareong</title>
 <?php require_once "bootstrap.php"; ?>
 </head>
+<style>
+table, th, td {
+  border:1px solid black;
+}
+th
+{
+    font-weight: bold;
+}
+</style>
 <body>
 <div class="container">
 <?php 
@@ -106,20 +89,42 @@ if(isset($_POST['make']) && isset($_POST['year']) && isset($_POST['mileage'])) /
     {
         echo('<p style="color:green;">'.htmlentities($_SESSION['success'])."</p>\n");
         unset($_SESSION['success']);
-    }?>
-<h2>Automobiles</h2>
-<ul>
-<?php
-    $stmt = $pdo -> query("SELECT * FROM autos");
-    while($row = $stmt -> fetch(PDO::FETCH_ASSOC))
+    }
+    if(isset($_SESSION['fail']))
     {
-        echo "<li>";
-        echo htmlentities($row['year']), " ", htmlentities($row['make']), " / " , htmlentities($row['mileage']);
-        echo "</li>\n";
+        echo('<p style="color:red;">'.htmlentities($_SESSION['fail'])."</p>\n");
+        echo "<p>Endogenic</p>";
+        unset($_SESSION['fail']);
     }
 ?>
-</ul>
-<a href="logout.php">Logout | </a><a href="add.php">Add New</a>
+<h2>Automobiles</h2>
+<table>
+    <tr>
+        <th>Make</th>
+        <th>Model</th>
+        <th>Year</th>
+        <th>Mileage</th>
+        <th>Action</th>
+    </tr>
+    <?php
+        $stmt = $pdo -> query("SELECT * FROM autos");
+        while($row = $stmt -> fetch(PDO::FETCH_ASSOC))
+        {
+
+            echo "<tr>\n";
+            echo "<td>", htmlentities($row['make']), "</td>\n";
+            echo "<td>", htmlentities($row['model']), "</td>\n";
+            echo "<td>", htmlentities($row['year']), "</td>\n";
+            echo "<td>", htmlentities($row['mileage']), "</td>\n";
+            echo "<td>", "<a href='edit.php?autos_id=", htmlentities($row['autos_id']) ,
+            "'>Edit</a> / <a href='delete.php?autos_id=", htmlentities($row['autos_id']), 
+            "'>Delete</a>", "</td>\n";
+            echo "</tr>\n";
+        }
+    ?>
+    </table>
+    <a href="add.php">Add New Entry</a><br/>
+    <a href="logout.php">Logout</a>
 </div>
 </body>
 </html>

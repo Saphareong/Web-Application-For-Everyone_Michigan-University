@@ -6,18 +6,9 @@ if (!isset($_SESSION['email'])) {
     die('ACCESS DENIED');
 }
 
-// If the user requested logout go back to index.php
-if ( isset($_POST['logout']) ) {
-    unset($_SESSION['email']);
-    header('Location: index.php');
-    return;
-}
-
 
 //NOT A PROFESSIONAL MOVE IT's JUST RECOMMENDED ACTION
 require_once "pdo.php";
-
-
 if(isset($_POST['make']) && isset($_POST['year']) && isset($_POST['mileage']) && isset($_POST['model'])) //this is when the form post below is submitted
 {
     if(strlen($_POST['make']) < 1 && strlen($_POST['year']) < 1 
@@ -35,23 +26,22 @@ if(isset($_POST['make']) && isset($_POST['year']) && isset($_POST['mileage']) &&
     }
     else
     {
-        $stmt = $pdo->prepare('INSERT INTO autos
-        (make, model, year, mileage) VALUES ( :mk, :md, :yr, :mi)');
+        $stmt = $pdo->prepare('UPDATE autos SET `make` = :mk, `model` = :md, `year` = :yr, `mileage` = :mi
+        WHERE `autos_id` = :ai');
         $stmt->execute(array(
         ':mk' => $_POST['make'],
         ':md' => $_POST['model'],
         ':yr' => $_POST['year'],
-        ':mi' => $_POST['mileage'])
+        ':mi' => $_POST['mileage'],
+        ':ai' => $_POST['autos_id'])
         );
-        $_SESSION['success'] = "added";
+        $_SESSION['success'] = "edited";
         header("Location: view.php");
         return;
     }
-    header("Location: add.php");
+    header("Location: edit.php?autos_id=".$_REQUEST['autos_id']);
     return;
 }
-
-
 
 ?>
 <!DOCTYPE html>
@@ -61,31 +51,32 @@ if(isset($_POST['make']) && isset($_POST['year']) && isset($_POST['mileage']) &&
 <?php require_once "bootstrap.php"; ?>
 </head>
 <body>
-<div class="container">
+<div class="container" style="margin-top: 100px;">
 <?php 
-    if(isset($_SESSION['email']))
-    {
-        echo "<h1>Tracking Autos for ";
-        echo htmlentities($_SESSION['email']);
-        echo "</h1>\n";
-    }
+    $autoid = $_REQUEST['autos_id'];
+    $stmt = $pdo -> prepare("SELECT * FROM `autos` WHERE `autos_id` = :ai");
+    $stmt -> execute(array(':ai' => $autoid));
+    $row = $stmt -> fetch(PDO::FETCH_ASSOC);
     if(isset($_SESSION['fail']))
     {
         echo('<p style="color:red;">'.htmlentities($_SESSION['fail'])."</p>\n");
-        echo "<p>Endogenic</p>";
         unset($_SESSION['fail']);
     }
 ?>
 <form method="post">
 <p>Make:
-<input type="text" name="make" size="60"/></p>
+    <?php echo '<input type="text" name="make" size="60" value="', $row['make'], '"/>' ?>
+</p>
 <p>Model:
-    <input type="text" name="model"/></p>
+    <?php echo '<input type="text" name="model" value="', $row['model'], '"/>' ?>
+    <?php echo '<input type="hidden" name="autos_id" value="', $row['autos_id'], '"/>' ?>
+</p>
 <p>Year:
-<input type="text" name="year"/></p>
+    <?php echo '<input type="text" name="year" value="', $row['year'], '"/>' ?>
 <p>Mileage:
-<input type="text" name="mileage"/></p>
-<input type="submit" value="Add">
+    <?php echo '<input type="text" name="mileage" value="', $row['mileage'], '"/>' ?>
+</p>
+<input type="submit" value="Save">
 <input type="submit" name="logout" value="Logout">
 </form>
 
